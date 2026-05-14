@@ -2,6 +2,15 @@ import time
 import os
 from typing import Dict, Any, List
 
+try:
+    import qdrant_client
+    from qdrant_client.models import PointStruct, VectorParams, Distance
+except ImportError:
+    qdrant_client = None
+    PointStruct = None
+    VectorParams = None
+    Distance = None
+
 class ShortTermMemory:
     """Manages ephemeral context for active sessions."""
     def __init__(self):
@@ -50,7 +59,20 @@ class LongTermMemory:
     def __init__(self):
         self.embeddings: Dict[str, Dict[str, Any]] = {}
         self.qdrant_url = os.environ.get("QDRANT_URL")
-        # In production, initialize qdrant_client.QdrantClient(url=self.qdrant_url)
+        self.client = None
+        self.collection_name = "aegis_memory"
+        if self.qdrant_url and qdrant_client:
+            try:
+                self.client = qdrant_client.QdrantClient(url=self.qdrant_url)
+                # Ensure collection exists, assume vector size 1536 for OpenAI embeddings if creating
+                if not self.client.collection_exists(self.collection_name):
+                    self.client.create_collection(
+                        collection_name=self.collection_name,
+                        vectors_config=VectorParams(size=1536, distance=Distance.COSINE)
+                    )
+            except Exception as e:
+                print(f"[AEGIS OS] Failed to initialize Qdrant client: {e}")
+                self.client = None
 
     def store_finding(self, finding_id: str, semantic_vector: List[float], metadata: Dict[str, Any]):
         self.embeddings[finding_id] = {
@@ -58,10 +80,34 @@ class LongTermMemory:
             "metadata": metadata,
             "stored_at": time.time()
         }
-        # TODO: if qdrant_url, client.upsert(...)
+
+        if self.client and PointStruct:
+            try:
+                point = PointStruct(
+                    id=finding_id,
+                    vector=semantic_vector,
+                    payload=metadata
+                )
+                self.client.upsert(
+                    collection_name=self.collection_name,
+                    points=[point]
+                )
+            except Exception as e:
+                print(f"[AEGIS OS] Failed to upsert to Qdrant: {e}")
 
     def search_similar(self, query_vector: List[float], limit: int = 5) -> List[Dict[str, Any]]:
-        # TODO: if qdrant_url, client.search(...)
+        if self.client:
+            try:
+                search_result = self.client.search(
+                    collection_name=self.collection_name,
+                    query_vector=query_vector,
+                    limit=limit
+                )
+                return [hit.payload for hit in search_result if hit.payload is not None]
+            except Exception as e:
+                print(f"[AEGIS OS] Failed to search Qdrant: {e}")
+
+        # Fallback to local memory if Qdrant is unavailable
         results = []
         for v in self.embeddings.values():
             results.append(v["metadata"])
