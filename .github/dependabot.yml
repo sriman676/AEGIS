@@ -1,0 +1,52 @@
+version: 2
+updates:
+  # ── Python backend ──────────────────────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/python/aegis-ai"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "deps(python)"
+    # Auto-merge only patch updates; minors/majors require review
+    groups:
+      fastapi-ecosystem:
+        patterns:
+          - "fastapi"
+          - "uvicorn"
+          - "starlette"
+          - "pydantic"
+          - "slowapi"
+      security-libs:
+        patterns:
+          - "cryptography"
+          - "httpx"
+
+  # ── React dashboard ─────────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "deps(dashboard)"
+
+  # ── GitHub Actions ───────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "deps(ci)"

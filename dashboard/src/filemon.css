@@ -1,0 +1,124 @@
+/* ─── File Monitor Tab ──────────────────────────────────────────────────────── */
+
+.filemon-layout { display: flex; flex-direction: column; gap: 14px; }
+
+.filemon-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.filemon-stat {
+  display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+}
+
+/* Toolbar */
+.filemon-toolbar {
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px; flex-wrap: wrap;
+}
+.filemon-search {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border-color);
+  border-radius: 8px; padding: 6px 12px; min-width: 220px;
+}
+.filemon-search-input {
+  background: none; border: none; outline: none;
+  color: var(--text-primary); font-size: 0.83rem; width: 100%;
+  font-family: var(--font-main);
+}
+.filemon-search-input::placeholder { color: var(--text-secondary); opacity: 0.6; }
+.filemon-search:focus-within { border-color: var(--accent-primary); }
+
+.filemon-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-btn--sm { padding: 4px 10px !important; font-size: 0.68rem !important; }
+
+.filemon-actions { display: flex; gap: 8px; margin-left: auto; }
+.fmon-action-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 8px;
+  border: 1px solid var(--border-color); background: transparent;
+  color: var(--text-secondary); font-size: 0.78rem; font-weight: 600; cursor: pointer;
+  transition: all 0.15s;
+}
+.fmon-action-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+.fmon-action-btn--danger:hover { background: rgba(255,51,102,0.1); border-color: rgba(255,51,102,0.3); color: var(--accent-danger); }
+
+/* Table wrapper */
+.filemon-table-wrap {
+  overflow: auto; border-radius: 12px;
+}
+.filemon-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.filemon-table thead tr {
+  border-bottom: 1px solid var(--border-color);
+}
+.filemon-table th {
+  padding: 10px 14px; text-align: left;
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-secondary); white-space: nowrap;
+}
+.filemon-table td { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.filemon-table tbody tr:last-child td { border-bottom: none; }
+
+/* Row highlight by status */
+.filemon-row { transition: background 0.1s; }
+.filemon-row:hover { background: rgba(255,255,255,0.03); }
+.filemon-row--blocked { background: rgba(255,51,102,0.03); }
+.filemon-row--pending { background: rgba(255,204,0,0.03); }
+
+/* Path cell */
+.filemon-path {
+  display: flex; align-items: center; gap: 8px;
+  max-width: 340px; color: var(--text-primary); font-size: 0.8rem;
+}
+.filemon-access-icon { opacity: 0.6; flex-shrink: 0; }
+.filemon-access-icon[data-type="read"]    { color: var(--accent-primary); }
+.filemon-access-icon[data-type="write"]   { color: var(--accent-warning); }
+.filemon-access-icon[data-type="exec"]    { color: var(--accent-danger); }
+.filemon-access-icon[data-type="delete"]  { color: var(--accent-danger); }
+.filemon-access-icon[data-type="network"] { color: var(--accent-secondary); }
+
+.filemon-agent { color: var(--text-secondary); font-size: 0.78rem; }
+.filemon-size  { color: var(--text-secondary); font-size: 0.78rem; }
+.filemon-ts    { color: var(--text-secondary); font-size: 0.75rem; white-space: nowrap; }
+
+/* Access type badge */
+.filemon-type-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  border: 1px solid;
+}
+.filemon-type--read    { color: var(--accent-primary);   background: rgba(0,255,170,0.08);  border-color: rgba(0,255,170,0.2); }
+.filemon-type--write   { color: var(--accent-warning);   background: rgba(255,204,0,0.08);  border-color: rgba(255,204,0,0.2); }
+.filemon-type--exec    { color: var(--accent-danger);    background: rgba(255,51,102,0.08); border-color: rgba(255,51,102,0.2); }
+.filemon-type--delete  { color: var(--accent-danger);    background: rgba(255,51,102,0.08); border-color: rgba(255,51,102,0.2); }
+.filemon-type--network { color: var(--accent-secondary); background: rgba(0,119,255,0.08);  border-color: rgba(0,119,255,0.2); }
+
+/* Status badge */
+.filemon-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; border: 1px solid;
+}
+.filemon-status--allowed { color: var(--accent-primary);   background: rgba(0,255,170,0.08);  border-color: rgba(0,255,170,0.25); }
+.filemon-status--blocked { color: var(--accent-danger);    background: rgba(255,51,102,0.08); border-color: rgba(255,51,102,0.25); }
+.filemon-status--pending { color: var(--accent-warning);   background: rgba(255,204,0,0.08);  border-color: rgba(255,204,0,0.25); }
+
+/* Per-row action buttons */
+.filemon-row-actions { display: flex; gap: 6px; white-space: nowrap; }
+.fmon-row-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 0.7rem; font-weight: 700; cursor: pointer; border: 1px solid;
+  transition: all 0.15s;
+}
+.fmon-row-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.fmon-row-btn--allow {
+  color: var(--accent-primary); background: rgba(0,255,170,0.06); border-color: rgba(0,255,170,0.25);
+}
+.fmon-row-btn--allow:not(:disabled):hover { background: rgba(0,255,170,0.15); }
+.fmon-row-btn--block {
+  color: var(--accent-danger); background: rgba(255,51,102,0.06); border-color: rgba(255,51,102,0.25);
+}
+.fmon-row-btn--block:not(:disabled):hover { background: rgba(255,51,102,0.15); }
+
+.filemon-empty { text-align: center; padding: 40px; color: var(--text-secondary); }

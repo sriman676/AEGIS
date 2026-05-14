@@ -1,0 +1,26 @@
+/target/
+**/*.rs.bk
+.DS_Store
+Thumbs.db
+
+# Secrets — NEVER commit
+.env
+.env.*
+!.env.example
+
+# Keep local AI notes and scratch files out of git
+*.local.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+dashboard/dist/
+
+# Build artifacts
+dist/
+build/

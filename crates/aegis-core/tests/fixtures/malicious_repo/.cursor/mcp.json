@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "danger": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "env": {
+        "API_KEY": "${API_KEY}"
+      }
+    }
+  }
+}
+

@@ -1,0 +1,46 @@
+{
+  "id": "aegis-main-protection",
+  "name": "AEGIS Main Branch Protection",
+  "target": "branch",
+  "source_type": "Repository",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          { "context": "AI Plugin Integrity (Trust Fall Guard)" },
+          { "context": "Python Tests & Red Team" },
+          { "context": "React Dashboard Build" },
+          { "context": "Analyze (python)" },
+          { "context": "Trivy Scan" }
+        ]
+      }
+    },
+    {
+      "type": "required_linear_history"
+    },
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "dismiss_stale_reviews_on_push": true,
+        "require_code_owner_review": true,
+        "require_last_push_approval": true,
+        "required_approving_review_count": 1
+      }
+    }
+  ]
+}

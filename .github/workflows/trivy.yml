@@ -1,0 +1,55 @@
+name: AEGIS Container Security Scan
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # Weekly scan to catch newly-discovered CVEs in base images
+    - cron: '0 7 * * 1'
+
+jobs:
+  trivy-scan:
+    name: "Trivy — Container & Filesystem Vulnerability Scan"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan Python backend filesystem (no build needed)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './python/aegis-ai'
+          format: 'sarif'
+          output: 'trivy-python.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Python scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-python.sarif'
+          category: 'trivy-python'
+
+      - name: Scan dashboard filesystem
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './dashboard'
+          format: 'sarif'
+          output: 'trivy-dashboard.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload dashboard scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-dashboard.sarif'
+          category: 'trivy-dashboard'

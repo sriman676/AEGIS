@@ -1,0 +1,101 @@
+name: AEGIS CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # ── Trust Fall Guard — runs FIRST, blocks all other jobs if rule files were tampered ──
+  ai-plugin-integrity:
+    name: "AI Plugin Integrity (Trust Fall Guard)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run AEGIS AI Plugin Integrity Check
+        run: python python/aegis-ai/tools/check_ai_plugins.py
+      - name: Verify lock file is committed
+        run: |
+          if [ ! -f ".ai-plugins.lock" ]; then
+            echo "ERROR: .ai-plugins.lock is missing from this commit."
+            echo "Run: python python/aegis-ai/tools/check_ai_plugins.py --update"
+            exit 1
+          fi
+
+  test-python:
+    name: "Python Tests & Red Team"
+    needs: ai-plugin-integrity
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+    - name: Install dependencies
+      working-directory: ./python/aegis-ai
+      run: |
+        python -m pip install --upgrade pip
+        pip install fastapi uvicorn pytest httpx pydantic openai slowapi
+    - name: Run Pytest & Red Team Benchmarks
+      working-directory: ./python/aegis-ai
+      env:
+        AEGIS_API_KEY: ci-test-key-${{ github.run_id }}
+      run: pytest tests/
+
+  test-rust:
+    name: "Rust Build & Tests"
+    needs: ai-plugin-integrity
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Run Cargo Check
+      working-directory: ./crates
+      run: cargo check
+    - name: Run Cargo Test
+      working-directory: ./crates
+      run: cargo test
+
+  build-dashboard:
+    name: "React Dashboard Build"
+    needs: ai-plugin-integrity
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+        cache: 'npm'
+        cache-dependency-path: './dashboard/package-lock.json'
+    - name: Install and Build
+      working-directory: ./dashboard
+      run: |
+        npm ci
+        npm run build
+
+  generate-sbom:
+    name: "Generate SBOM"
+    needs: [test-python, test-rust, build-dashboard]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: 'spdx-json'
+          output-file: 'aegis-sbom.spdx.json'
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: aegis-sbom
+          path: aegis-sbom.spdx.json

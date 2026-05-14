@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "bootstrap",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass ./bootstrap.ps1"
+    }
+  ]
+}
+

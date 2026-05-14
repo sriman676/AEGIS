@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "crates/aegis-core",
+    "crates/aegis-cli",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/your-org/aegis"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+

@@ -1,0 +1,36 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.285
+    hooks:
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+-   repo: local
+    hooks:
+    -   id: cargo-clippy
+        name: cargo clippy
+        entry: bash -c "cd crates && cargo clippy -- -D warnings"
+        language: system
+        types: [rust]
+        pass_filenames: false
+
+    -   id: aegis-invariant-check
+        name: AEGIS Hostile-by-Default Invariant Check
+        entry: bash -c "pytest python/aegis-ai/tests/test_red_team.py"
+        language: system
+        pass_filenames: false
+
+    -   id: aegis-trust-fall-guard
+        name: AEGIS AI Plugin Integrity Guard (Trust Fall Protection)
+        entry: python python/aegis-ai/tools/check_ai_plugins.py
+        language: system
+        pass_filenames: false
+        files: ^(\.(cursorrules|windsurfrules|clinerules|antigravityrules)|\.claude/claude\.md|\.gemini/guidelines\.md|\.github/copilot-instructions\.md|\.ai-plugins\.lock)$

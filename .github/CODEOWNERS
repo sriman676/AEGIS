@@ -1,0 +1,35 @@
+# CODEOWNERS
+# Defines which maintainers must review changes to security-critical files.
+# GitHub will automatically request review from these owners on every PR.
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global fallback — all PRs require at least one repo owner review
+*                                           @agnies-dev
+
+# ── Security-Critical Backend ─────────────────────────────────────────────────
+# Changes to auth, rate-limiting, sandbox, or governance require maintainer sign-off
+python/aegis-ai/src/security.py            @agnies-dev
+python/aegis-ai/src/sandbox_os/kernel.py   @agnies-dev
+python/aegis-ai/src/orchestrator/          @agnies-dev
+python/aegis-ai/src/threat_intel.py        @agnies-dev
+
+# ── AI Plugin Rule Files (Trust Fall Attack Surface) ─────────────────────────
+# ANY change to these files requires explicit maintainer review.
+# See SECURITY.md for the Trust Fall attack explanation.
+.cursorrules                                @agnies-dev
+.windsurfrules                              @agnies-dev
+.clinerules                                 @agnies-dev
+.antigravityrules                           @agnies-dev
+.claude/claude.md                           @agnies-dev
+.gemini/guidelines.md                       @agnies-dev
+.github/copilot-instructions.md             @agnies-dev
+.ai-plugins.lock                            @agnies-dev
+
+# ── CI / Branch Protection ────────────────────────────────────────────────────
+.github/workflows/                          @agnies-dev
+.github/rulesets/                           @agnies-dev
+.pre-commit-config.yaml                     @agnies-dev
+
+# ── Integrity & Security Tooling ─────────────────────────────────────────────
+python/aegis-ai/tools/check_ai_plugins.py  @agnies-dev
+SECURITY.md                                 @agnies-dev
