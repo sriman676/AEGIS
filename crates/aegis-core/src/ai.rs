@@ -16,7 +16,7 @@ pub struct CapabilityNode {
     pub confidence: f32,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct SemanticAnalysisResponse {
     pub classifications: Vec<String>,
     pub annotations: HashMap<String, String>,
