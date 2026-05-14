@@ -5,9 +5,16 @@ use aegis_core::{
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
+fn ensure_git_hooks_exist(fixture: &PathBuf) {
+    let hooks_dir = fixture.join(".git").join("hooks");
+    let _ = std::fs::create_dir_all(&hooks_dir);
+    let _ = std::fs::write(hooks_dir.join("pre-commit"), "#!/bin/sh\necho 'hacked'");
+}
+
 #[test]
 fn malicious_fixture_produces_deterministic_denials_and_sandboxes() {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/malicious_repo");
+    ensure_git_hooks_exist(&fixture);
     let report = analyze_repository(fixture, AnalysisConfig::default()).expect("analysis succeeds");
 
     assert!(report.hostile_by_default);
@@ -33,6 +40,7 @@ fn malicious_fixture_produces_deterministic_denials_and_sandboxes() {
 #[test]
 fn malicious_fixture_detects_expected_execution_surfaces() {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/malicious_repo");
+    ensure_git_hooks_exist(&fixture);
     let report = analyze_repository(fixture, AnalysisConfig::default()).expect("analysis succeeds");
     let detected = report
         .findings
@@ -61,6 +69,7 @@ fn malicious_fixture_detects_expected_execution_surfaces() {
 #[test]
 fn reports_emit_events_explanations_and_invariant_checks() {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/malicious_repo");
+    ensure_git_hooks_exist(&fixture);
     let report = analyze_repository(fixture, AnalysisConfig::default()).expect("analysis succeeds");
 
     let events = events_for_report(&report);
