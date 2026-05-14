@@ -10,7 +10,7 @@ dependencies = [
     "openai",
     "python-dotenv",
     "httpx",
-    "win11toast",
+    "win11toast; sys_platform == 'win32'",
     "websockets",
     "qdrant-client",
     "aiofiles"
