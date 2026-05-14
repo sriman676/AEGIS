@@ -1,3 +1,4 @@
+from typing import List
 """
 AEGIS Threat Intel — Hardened
 ================================
@@ -93,6 +94,13 @@ class ThreatIntelligence:
         re.compile(r"sk-[0-9A-Za-z]{48}"),           # OpenAI Key
     ]
 
+    _COMBINED_PATTERN: re.Pattern = re.compile(
+        "|".join(
+            f"(?i:{p.pattern})" if p.flags & re.IGNORECASE else f"(?:{p.pattern})"
+            for p in _DANGEROUS_PATTERNS
+        )
+    )
+
     def check_mitre_tactic(self, command: str) -> str:
         """
         Checks if a command matches a known MITRE ATT&CK tactic.
@@ -104,10 +112,9 @@ class ThreatIntelligence:
             tokens[0] = Path(tokens[0]).name.lower()
         normalized = " ".join(tokens).lower()
 
-        for pattern in self._DANGEROUS_PATTERNS:
-            m = pattern.search(normalized)
-            if m:
-                return f"Tactic Matched: Execution/Command and Scripting Interpreter ({m.group()})"
+        m = self._COMBINED_PATTERN.search(normalized)
+        if m:
+            return f"Tactic Matched: Execution/Command and Scripting Interpreter ({m.group()})"
 
         return "Clean"
 
