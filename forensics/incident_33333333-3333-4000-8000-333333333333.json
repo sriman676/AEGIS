@@ -1,0 +1,22 @@
+{
+  "session_id": "33333333-3333-4000-8000-333333333333",
+  "timestamp": 1778781357.3464386,
+  "reasoning": "Escalation required. Dangerous capabilities requested: {'ProcessSpawn'}",
+  "evidence": {
+    "decision_id": "de372b77-2819-41e4-8a8d-15df2b7add07",
+    "approved": false,
+    "escalation_required": true,
+    "reasoning": "Escalation required. Dangerous capabilities requested: {'ProcessSpawn'}",
+    "applied_limits": {
+      "max_steps": 0,
+      "allowed_capabilities": [],
+      "requires_human_review": true
+    },
+    "malware_warning": false
+  },
+  "environment": {
+    "os": "posix",
+    "pid": 99047,
+    "cwd": "/app"
+  }
+}
