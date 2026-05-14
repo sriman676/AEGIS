@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+import sys
+import os
+print(f"osascript called with: {sys.argv}")
+print(f"AEGIS_MSG: {os.environ.get('AEGIS_MSG')}")
+print(f"AEGIS_TITLE: {os.environ.get('AEGIS_TITLE')}")
