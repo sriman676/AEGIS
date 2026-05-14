@@ -1,12 +1,12 @@
 {
   "session_id": "44444444-4444-4000-8000-444444444444",
-  "timestamp": 1778740790.793109,
-  "reasoning": "Escalation required. Dangerous capabilities requested: {'NetworkAccess', 'ProcessSpawn'}",
+  "timestamp": 1778780940.1674714,
+  "reasoning": "Escalation required. Dangerous capabilities requested: {'ProcessSpawn', 'NetworkAccess'}",
   "evidence": {
-    "decision_id": "f498a774-45b0-44b0-9f59-801171eba79b",
+    "decision_id": "658a648b-4694-482d-9eaa-a953904f4c47",
     "approved": false,
     "escalation_required": true,
-    "reasoning": "Escalation required. Dangerous capabilities requested: {'NetworkAccess', 'ProcessSpawn'}",
+    "reasoning": "Escalation required. Dangerous capabilities requested: {'ProcessSpawn', 'NetworkAccess'}",
     "applied_limits": {
       "max_steps": 0,
       "allowed_capabilities": [],
@@ -15,8 +15,8 @@
     "malware_warning": false
   },
   "environment": {
-    "os": "nt",
-    "pid": 15620,
-    "cwd": "D:\\OneDrive-SRM\\OneDrive - SRM University, AP - Amaravathi\\Documents\\Agnies\\python\\aegis-ai"
+    "os": "posix",
+    "pid": 140185,
+    "cwd": "/app/python/aegis-ai"
   }
 }

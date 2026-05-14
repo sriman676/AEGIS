@@ -3,7 +3,6 @@ import logging.handlers
 import json
 import time
 import os
-import re
 from typing import Dict, Any, List
 import asyncio
 from pathlib import Path
@@ -116,8 +115,11 @@ class TelemetryPipeline:
 
     def capture_forensic_snapshot(self, session_id: str, decision: Any):
         """Creates a detailed forensic artifact for security incidents."""
+        # Sanitize session_id to prevent path traversal (CodeQL High Severity Alert)
+        safe_session_id = os.path.basename(str(session_id))
+
         snapshot = {
-            "session_id": session_id,
+            "session_id": safe_session_id,
             "timestamp": time.time(),
             "reasoning": decision.reasoning,
             "evidence": decision.model_dump(),
@@ -128,15 +130,8 @@ class TelemetryPipeline:
             }
         }
 
-        safe_session_id = re.sub(r"[^A-Za-z0-9_-]", "_", session_id)
-        base_dir = Path("forensics").resolve()
-        base_dir.mkdir(exist_ok=True)
-        snapshot_path = (base_dir / f"incident_{safe_session_id}.json").resolve()
-        try:
-            snapshot_path.relative_to(base_dir)
-        except ValueError:
-            self.logger.error("Invalid forensic snapshot path for session_id: %s", session_id)
-            return
+        snapshot_path = Path("forensics") / f"incident_{safe_session_id}.json"
+        snapshot_path.parent.mkdir(exist_ok=True)
 
         self.logger.warning("FORENSIC SNAPSHOT CAPTURED: %s", snapshot_path)
 
