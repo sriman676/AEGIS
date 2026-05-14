@@ -13,12 +13,14 @@ Changes vs original:
 """
 
 import os
+import asyncio
 import time
 import logging
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator, UUID4
 from typing import List, Optional, Dict, Any
+from pathlib import Path
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -128,16 +130,28 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
         repo_id = body.path
         try:
             git_cmd = ["git", "-C", body.path, "remote", "get-url", "origin"]
-            git_result = subprocess.run(git_cmd, capture_output=True, text=True, check=False)
-            if git_result.returncode == 0:
-                repo_id = git_result.stdout.strip()
+            proc = await asyncio.create_subprocess_exec(
+                *git_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await proc.communicate()
+            if proc.returncode == 0:
+                repo_id = stdout.decode().strip()
         except Exception:
             pass
 
         # 1. Deterministic intake via Rust binary
         cmd = ["aegis", "intake", "--path", body.path, "--format", "json"]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        report = json.loads(result.stdout)
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode != 0:
+            raise subprocess.CalledProcessError(proc.returncode, cmd, output=stdout, stderr=stderr)
+        report = json.loads(stdout.decode())
         
         # 2. Semantic documentation scan (README)
         readme_path = Path(body.path) / "README.md"
