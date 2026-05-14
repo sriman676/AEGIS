@@ -42,7 +42,7 @@ jobs:
       working-directory: ./python/aegis-ai
       run: |
         python -m pip install --upgrade pip
-        pip install fastapi uvicorn pytest httpx pydantic openai slowapi python-dotenv aiofiles
+        pip install fastapi uvicorn pytest httpx pydantic openai slowapi python-dotenv aiofiles>=23.2.1
     - name: Run Pytest & Red Team Benchmarks
       working-directory: ./python/aegis-ai
       env:
