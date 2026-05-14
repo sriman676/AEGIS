@@ -14,3 +14,4 @@ pub use error::{AegisError, Result};
 pub use event::*;
 pub use explain::*;
 pub use model::*;
+pub use policy::*;
