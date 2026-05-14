@@ -17,6 +17,7 @@ Supports:
 """
 
 import asyncio
+import os
 import json
 import sys
 import signal
@@ -46,12 +47,25 @@ def _notify(title: str, message: str, critical: bool = False) -> None:
     os_name = platform.system()
     try:
         if os_name == "Windows":
-            from win11toast import toast
-            toast(title, message, app_id="AEGIS.CommandCenter")
+            # Use environment variables to pass arguments to PowerShell securely
+            env = os.environ.copy()
+            env["NOTIFY_TITLE"] = title
+            env["NOTIFY_MSG"] = message
+            subprocess.run(
+                [
+                    "powershell", "-command",
+                    "New-BurntToastNotification -Text $env:NOTIFY_TITLE, $env:NOTIFY_MSG"
+                ],
+                check=False, timeout=5, env=env
+            )
 
         elif os_name == "Darwin":
-            script = f'display notification "{message}" with title "{title}" sound name "Basso"'
-            subprocess.run(["osascript", "-e", script], check=False, timeout=3)
+            # Use environment variables to pass arguments to osascript securely
+            env = os.environ.copy()
+            env["NOTIFY_TITLE"] = title
+            env["NOTIFY_MSG"] = message
+            script = 'display notification (system attribute "NOTIFY_MSG") with title (system attribute "NOTIFY_TITLE") sound name "Basso"'
+            subprocess.run(["osascript", "-e", script], check=False, timeout=3, env=env)
 
         else:  # Linux / other POSIX
             urgency = "critical" if critical else "normal"
