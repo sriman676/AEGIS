@@ -86,3 +86,113 @@ pub fn validate_report_invariants(report: &RiskReport) -> InvariantReport {
 
     InvariantReport { checks }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::FindingKind;
+    use std::path::PathBuf;
+    use uuid::Uuid;
+
+    fn mock_finding(severity: Severity, capabilities: Vec<Capability>) -> Finding {
+        Finding {
+            id: Uuid::new_v4(),
+            kind: FindingKind::AiInstruction,
+            path: PathBuf::from("mock/path"),
+            title: "Mock Finding".to_string(),
+            evidence: "Mock evidence".to_string(),
+            severity,
+            capabilities,
+        }
+    }
+
+    #[test]
+    fn test_evaluate_finding_deny_critical_severity() {
+        let finding = mock_finding(Severity::Critical, vec![]);
+        let decision = evaluate_finding(&finding);
+        assert_eq!(decision.mode, EnforcementMode::Deny);
+        assert_eq!(decision.reason, "critical capability requires deterministic denial");
+    }
+
+    #[test]
+    fn test_evaluate_finding_deny_runtime_privilege_escalation() {
+        let finding = mock_finding(Severity::High, vec![Capability::RuntimePrivilegeEscalation]);
+        let decision = evaluate_finding(&finding);
+        assert_eq!(decision.mode, EnforcementMode::Deny);
+        assert_eq!(decision.reason, "critical capability requires deterministic denial");
+    }
+
+    #[test]
+    fn test_evaluate_finding_deny_secret_access() {
+        let finding = mock_finding(Severity::High, vec![Capability::SecretAccess]);
+        let decision = evaluate_finding(&finding);
+        assert_eq!(decision.mode, EnforcementMode::Deny);
+        assert_eq!(decision.reason, "critical capability requires deterministic denial");
+    }
+
+    #[test]
+    fn test_evaluate_finding_sandbox_capabilities() {
+        let sandbox_capabilities = vec![
+            Capability::ProcessSpawn,
+            Capability::NetworkAccess,
+            Capability::ContainerControl,
+            Capability::McpToolInvocation,
+            Capability::GitHookExecution,
+            Capability::IdeTaskExecution,
+            Capability::DependencyScriptExecution,
+        ];
+
+        for capability in sandbox_capabilities {
+            let finding = mock_finding(Severity::High, vec![capability]);
+            let decision = evaluate_finding(&finding);
+            assert_eq!(decision.mode, EnforcementMode::Sandbox);
+            assert_eq!(
+                decision.reason,
+                "execution-capable behavior must be sandboxed before use"
+            );
+        }
+    }
+
+    #[test]
+    fn test_evaluate_finding_escalate_default() {
+        let finding = mock_finding(Severity::High, vec![Capability::FilesystemRead]);
+        let decision = evaluate_finding(&finding);
+        assert_eq!(decision.mode, EnforcementMode::Escalate);
+        assert_eq!(
+            decision.reason,
+            "hostile-by-default policy requires explicit human review"
+        );
+    }
+
+    #[test]
+    fn test_evaluate_finding_escalate_empty_capabilities() {
+        let finding = mock_finding(Severity::Info, vec![]);
+        let decision = evaluate_finding(&finding);
+        assert_eq!(decision.mode, EnforcementMode::Escalate);
+    }
+
+    #[test]
+    fn test_evaluate_findings_maps_correctly() {
+        let finding1 = mock_finding(Severity::Critical, vec![]);
+        let finding2 = mock_finding(Severity::Medium, vec![Capability::ProcessSpawn]);
+        let finding3 = mock_finding(Severity::Low, vec![Capability::FilesystemWrite]);
+
+        let id1 = finding1.id;
+        let id2 = finding2.id;
+        let id3 = finding3.id;
+
+        let findings = vec![finding1, finding2, finding3];
+        let decisions = evaluate_findings(&findings);
+
+        assert_eq!(decisions.len(), 3);
+
+        let decision1 = decisions.iter().find(|d| d.finding_id == id1).unwrap();
+        assert_eq!(decision1.mode, EnforcementMode::Deny);
+
+        let decision2 = decisions.iter().find(|d| d.finding_id == id2).unwrap();
+        assert_eq!(decision2.mode, EnforcementMode::Sandbox);
+
+        let decision3 = decisions.iter().find(|d| d.finding_id == id3).unwrap();
+        assert_eq!(decision3.mode, EnforcementMode::Escalate);
+    }
+}
