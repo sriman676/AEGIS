@@ -4,9 +4,9 @@
 
 **The Hostile-by-Default, AI-Native Workspace Security & Autonomous Engineering Engine**
 
-[![AEGIS CI/CD](https://github.com/your-org/aegis/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/aegis/actions/workflows/ci.yml)
-[![CodeQL Security Analysis](https://github.com/your-org/aegis/actions/workflows/codeql.yml/badge.svg)](https://github.com/your-org/aegis/actions/workflows/codeql.yml)
-[![Trivy Scan](https://github.com/your-org/aegis/actions/workflows/trivy.yml/badge.svg)](https://github.com/your-org/aegis/actions/workflows/trivy.yml)
+[![AEGIS CI/CD](https://github.com/sriman676/AEGIS/actions/workflows/ci.yml/badge.svg)](https://github.com/sriman676/AEGIS/actions/workflows/ci.yml)
+[![CodeQL Security Analysis](https://github.com/sriman676/AEGIS/actions/workflows/codeql.yml/badge.svg)](https://github.com/sriman676/AEGIS/actions/workflows/codeql.yml)
+[![Trivy Scan](https://github.com/sriman676/AEGIS/actions/workflows/trivy.yml/badge.svg)](https://github.com/sriman676/AEGIS/actions/workflows/trivy.yml)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
