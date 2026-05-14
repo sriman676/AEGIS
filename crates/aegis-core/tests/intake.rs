@@ -12,7 +12,7 @@ fn ensure_git_hooks_exist(fixture: &PathBuf) {
 }
 
 #[test]
-fn malicious_fixture_produces_deterministic_denials_and_sandboxes() {
+fn malicious_fixture_produces_deterministic_denials() {
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/malicious_repo");
     ensure_git_hooks_exist(&fixture);
     let report = analyze_repository(fixture, AnalysisConfig::default()).expect("analysis succeeds");
@@ -29,10 +29,6 @@ fn malicious_fixture_produces_deterministic_denials_and_sandboxes() {
         .policy_decisions
         .iter()
         .any(|decision| decision.mode == EnforcementMode::Deny));
-    assert!(report
-        .policy_decisions
-        .iter()
-        .any(|decision| decision.mode == EnforcementMode::Sandbox));
     assert!(!report.execution_graph.nodes.is_empty());
     assert!(!report.execution_graph.edges.is_empty());
 }

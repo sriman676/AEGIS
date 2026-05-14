@@ -27,13 +27,13 @@ fn evaluate_finding(finding: &Finding) -> PolicyDecision {
         || has(Capability::DependencyScriptExecution)
     {
         (
-            EnforcementMode::Sandbox,
-            "execution-capable behavior must be sandboxed before use",
+            EnforcementMode::Deny,
+            "execution-capable behavior must be denied",
         )
     } else {
         (
-            EnforcementMode::Escalate,
-            "hostile-by-default policy requires explicit human review",
+            EnforcementMode::Deny,
+            "hostile-by-default policy requires deterministic denial",
         )
     };
 
@@ -145,10 +145,10 @@ mod tests {
         for capability in sandbox_capabilities {
             let finding = mock_finding(Severity::High, vec![capability]);
             let decision = evaluate_finding(&finding);
-            assert_eq!(decision.mode, EnforcementMode::Sandbox);
+            assert_eq!(decision.mode, EnforcementMode::Deny);
             assert_eq!(
                 decision.reason,
-                "execution-capable behavior must be sandboxed before use"
+                "execution-capable behavior must be denied"
             );
         }
     }
@@ -157,10 +157,10 @@ mod tests {
     fn test_evaluate_finding_escalate_default() {
         let finding = mock_finding(Severity::High, vec![Capability::FilesystemRead]);
         let decision = evaluate_finding(&finding);
-        assert_eq!(decision.mode, EnforcementMode::Escalate);
+        assert_eq!(decision.mode, EnforcementMode::Deny);
         assert_eq!(
             decision.reason,
-            "hostile-by-default policy requires explicit human review"
+            "hostile-by-default policy requires deterministic denial"
         );
     }
 
@@ -168,7 +168,7 @@ mod tests {
     fn test_evaluate_finding_escalate_empty_capabilities() {
         let finding = mock_finding(Severity::Info, vec![]);
         let decision = evaluate_finding(&finding);
-        assert_eq!(decision.mode, EnforcementMode::Escalate);
+        assert_eq!(decision.mode, EnforcementMode::Deny);
     }
 
     #[test]
@@ -190,9 +190,9 @@ mod tests {
         assert_eq!(decision1.mode, EnforcementMode::Deny);
 
         let decision2 = decisions.iter().find(|d| d.finding_id == id2).unwrap();
-        assert_eq!(decision2.mode, EnforcementMode::Sandbox);
+        assert_eq!(decision2.mode, EnforcementMode::Deny);
 
         let decision3 = decisions.iter().find(|d| d.finding_id == id3).unwrap();
-        assert_eq!(decision3.mode, EnforcementMode::Escalate);
+        assert_eq!(decision3.mode, EnforcementMode::Deny);
     }
 }
