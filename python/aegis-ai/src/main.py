@@ -120,7 +120,15 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
     Deterministic intake via Rust aegis-cli.
     Identifies 'Malware Repos' based on findings and risk scores.
     """
-    if not os.path.exists(body.path):
+    # Path Traversal Protection
+    from pathlib import Path
+    base_dir = Path(os.environ.get("AEGIS_REPO_DIR", os.getcwd())).resolve()
+    requested_path = Path(body.path).resolve()
+
+    if not requested_path.is_relative_to(base_dir):
+        raise HTTPException(status_code=403, detail="Access denied: Path is outside allowed repository directory.")
+
+    if not requested_path.exists():
         raise HTTPException(status_code=404, detail="Path not found.")
     
     try:

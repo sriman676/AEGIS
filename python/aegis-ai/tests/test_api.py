@@ -85,3 +85,20 @@ def test_analyze_semantics_fallback():
     
     # High confidence capability should trigger 'semantic-chain-detected' in the mock logic
     assert "semantic-chain-detected" in data["classifications"]
+
+def test_repo_intake_path_traversal():
+    # Attempt to traverse outside the base directory using an absolute path to /etc/passwd
+    payload_absolute = {
+        "path": "/etc/passwd"
+    }
+    response_abs = client.post("/repo/intake", json=payload_absolute)
+    assert response_abs.status_code == 403
+    assert "outside allowed repository directory" in response_abs.json()["detail"]
+
+    # Attempt to traverse outside the base directory using a relative path with '..'
+    payload_relative = {
+        "path": "../../../../../../etc/passwd"
+    }
+    response_rel = client.post("/repo/intake", json=payload_relative)
+    assert response_rel.status_code == 403
+    assert "outside allowed repository directory" in response_rel.json()["detail"]
