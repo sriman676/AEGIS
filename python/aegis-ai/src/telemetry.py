@@ -7,6 +7,7 @@ from typing import Dict, Any, List
 import asyncio
 from pathlib import Path
 from fastapi import WebSocket
+import aiofiles
 
 # ── Persistent audit log (survives process restarts) ──────────────────────────
 _AUDIT_LOG_PATH = Path("aegis-audit.log")
@@ -33,6 +34,7 @@ class TelemetryPipeline:
         self._last_log_time: float = 0
         self._log_count: int = 0
         self._MAX_LOGS_PER_SEC: int = 50
+        self._background_tasks: set[asyncio.Task] = set()
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -104,6 +106,13 @@ class TelemetryPipeline:
             except ImportError:
                 pass
 
+    async def _capture_forensic_snapshot_async(self, snapshot_path: Path, snapshot: Dict[str, Any]):
+        try:
+            async with aiofiles.open(snapshot_path, "w") as f:
+                await f.write(json.dumps(snapshot, indent=2))
+        except Exception as e:
+            self.logger.error("Failed to async capture forensic snapshot: %s", str(e))
+
     def capture_forensic_snapshot(self, session_id: str, decision: Any):
         """Creates a detailed forensic artifact for security incidents."""
         snapshot = {
@@ -121,9 +130,16 @@ class TelemetryPipeline:
         snapshot_path = Path("forensics") / f"incident_{session_id}.json"
         snapshot_path.parent.mkdir(exist_ok=True)
         
-        with open(snapshot_path, "w") as f:
-            json.dump(snapshot, f, indent=2)
-        
         self.logger.warning("FORENSIC SNAPSHOT CAPTURED: %s", snapshot_path)
+
+        try:
+            loop = asyncio.get_running_loop()
+            task = loop.create_task(self._capture_forensic_snapshot_async(snapshot_path, snapshot))
+            self._background_tasks.add(task)
+            task.add_done_callback(self._background_tasks.discard)
+        except RuntimeError:
+            # Fallback for environments without a running event loop (e.g., synchronous tests)
+            with open(snapshot_path, "w") as f:
+                json.dump(snapshot, f, indent=2)
 
 telemetry = TelemetryPipeline()

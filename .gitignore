@@ -24,3 +24,5 @@ dashboard/dist/
 # Build artifacts
 dist/
 build/
+forensics/
+aegis-audit.log
