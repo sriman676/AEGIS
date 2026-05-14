@@ -12,7 +12,9 @@ dependencies = [
     "httpx",
     "win11toast",
     "websockets",
-    "qdrant-client"
+    "qdrant-client",
+    "aiofiles",
+    "slowapi"
 ]
 
 [project.optional-dependencies]
