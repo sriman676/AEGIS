@@ -120,14 +120,20 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
     Deterministic intake via Rust aegis-cli.
     Identifies 'Malware Repos' based on findings and risk scores.
     """
-    if not os.path.exists(body.path):
+    allowed_repo_root = os.path.abspath(os.getenv("AEGIS_REPO_ROOT", "/tmp"))
+    safe_repo_path = os.path.abspath(body.path)
+
+    if not os.path.isdir(safe_repo_path):
         raise HTTPException(status_code=404, detail="Path not found.")
+
+    if os.path.commonpath([safe_repo_path, allowed_repo_root]) != allowed_repo_root:
+        raise HTTPException(status_code=400, detail="Path is outside allowed repository root.")
     
     try:
         # 0. Fingerprint repository (Git remote)
-        repo_id = body.path
+        repo_id = safe_repo_path
         try:
-            git_cmd = ["git", "-C", body.path, "remote", "get-url", "origin"]
+            git_cmd = ["git", "-C", safe_repo_path, "remote", "get-url", "origin"]
             git_result = subprocess.run(git_cmd, capture_output=True, text=True, check=False)
             if git_result.returncode == 0:
                 repo_id = git_result.stdout.strip()
@@ -135,12 +141,12 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
             pass
 
         # 1. Deterministic intake via Rust binary
-        cmd = ["aegis", "intake", "--path", body.path, "--format", "json"]
+        cmd = ["aegis", "intake", "--path", safe_repo_path, "--format", "json"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         report = json.loads(result.stdout)
         
         # 2. Semantic documentation scan (README)
-        readme_path = Path(body.path) / "README.md"
+        readme_path = Path(safe_repo_path) / "README.md"
         if readme_path.exists():
             from .threat_intel import threat_intel
             doc_findings = threat_intel.scan_documentation(readme_path.read_text(errors="ignore"))
@@ -154,7 +160,7 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
                 })
         
         # 3. VSCode Task Scan (Immediate Execution Vector)
-        task_path = Path(body.path) / ".vscode" / "tasks.json"
+        task_path = Path(safe_repo_path) / ".vscode" / "tasks.json"
         if task_path.exists():
             report["findings"].append({
                 "title": "VSCode Auto-Task Detected",
@@ -165,7 +171,7 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
             })
 
         # Track risk state in governance engine
-        governance_engine.register_repo_risk(body.path, report)
+        governance_engine.register_repo_risk(safe_repo_path, report)
         
         return report
     except subprocess.CalledProcessError as e:
