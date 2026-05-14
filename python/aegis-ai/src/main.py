@@ -179,7 +179,7 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
             })
 
         # Track risk state in governance engine
-        governance_engine.register_repo_risk(body.path, report)
+        governance_engine.register_repo_risk(repo_id, report)
         
         return report
     except subprocess.CalledProcessError as e:

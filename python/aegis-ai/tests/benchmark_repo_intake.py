@@ -35,13 +35,13 @@ async def benchmark():
     with open(aegis_mock, "w") as f:
         # sleep 0.1 to simulate real work and show blocking vs non-blocking difference clearly
         f.write("#!/bin/bash\nsleep 0.1\necho '{\"findings\": []}'\n")
-    os.chmod(aegis_mock, 0o755)
+    os.chmod(aegis_mock, 0o700)
 
     git_mock = os.path.join(bin_dir, "git")
     with open(git_mock, "w") as f:
         # sleep 0.1 to simulate git work
         f.write("#!/bin/bash\nsleep 0.1\necho 'https://github.com/example/mockrepo.git'\n")
-    os.chmod(git_mock, 0o755)
+    os.chmod(git_mock, 0o700)
 
     os.environ["PATH"] = bin_dir + ":" + os.environ.get("PATH", "")
 
