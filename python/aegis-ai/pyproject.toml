@@ -11,7 +11,8 @@ dependencies = [
     "python-dotenv",
     "httpx",
     "win11toast",
-    "websockets"
+    "websockets",
+    "qdrant-client"
 ]
 
 [project.optional-dependencies]
