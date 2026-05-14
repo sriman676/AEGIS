@@ -12,6 +12,7 @@ dependencies = [
     "httpx",
     "win11toast",
     "websockets",
+    "aiofiles",
     "qdrant-client"
 ]
 
