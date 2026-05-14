@@ -10,7 +10,7 @@ services:
     environment:
       - AEGIS_API_KEY=${AEGIS_API_KEY:-dev-key-change-me}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - DATABASE_URL=postgresql://aegis:aegis@postgres:5432/aegis_db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-aegis}:${POSTGRES_PASSWORD:-aegis}@postgres:5432/${POSTGRES_DB:-aegis_db}}
       - QDRANT_URL=http://qdrant:6333
     depends_on:
       postgres:
@@ -26,16 +26,16 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=aegis
-      - POSTGRES_PASSWORD=aegis
-      - POSTGRES_DB=aegis_db
+      - POSTGRES_USER=${POSTGRES_USER:-aegis}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-aegis}
+      - POSTGRES_DB=${POSTGRES_DB:-aegis_db}
     # H-08: Expose postgres only to the internal docker network, not the host.
     expose:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aegis -d aegis_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aegis} -d ${POSTGRES_DB:-aegis_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
