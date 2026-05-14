@@ -26,3 +26,5 @@ dist/
 build/
 forensics/
 aegis-audit.log
+**/forensics/
+**/aegis-audit.log
