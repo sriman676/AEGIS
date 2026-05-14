@@ -4,6 +4,7 @@ import json
 import time
 import os
 import re
+import uuid
 from typing import Dict, Any, List
 import asyncio
 from pathlib import Path
@@ -131,7 +132,8 @@ class TelemetryPipeline:
         safe_session_id = re.sub(r"[^A-Za-z0-9_-]", "_", session_id)
         base_dir = Path("forensics").resolve()
         base_dir.mkdir(exist_ok=True)
-        snapshot_path = (base_dir / f"incident_{safe_session_id}.json").resolve()
+        incident_id = uuid.uuid4().hex
+        snapshot_path = (base_dir / f"incident_{incident_id}.json").resolve()
         try:
             snapshot_path.relative_to(base_dir)
         except ValueError:
