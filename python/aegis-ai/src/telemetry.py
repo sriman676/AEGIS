@@ -3,6 +3,7 @@ import logging.handlers
 import json
 import time
 import os
+import re
 from typing import Dict, Any, List
 import asyncio
 from pathlib import Path
@@ -126,10 +127,17 @@ class TelemetryPipeline:
                 "cwd": os.getcwd(),
             }
         }
-        
-        snapshot_path = Path("forensics") / f"incident_{session_id}.json"
-        snapshot_path.parent.mkdir(exist_ok=True)
-        
+
+        safe_session_id = re.sub(r"[^A-Za-z0-9_-]", "_", session_id)
+        base_dir = Path("forensics").resolve()
+        base_dir.mkdir(exist_ok=True)
+        snapshot_path = (base_dir / f"incident_{safe_session_id}.json").resolve()
+        try:
+            snapshot_path.relative_to(base_dir)
+        except ValueError:
+            self.logger.error("Invalid forensic snapshot path for session_id: %s", session_id)
+            return
+
         self.logger.warning("FORENSIC SNAPSHOT CAPTURED: %s", snapshot_path)
 
         try:
