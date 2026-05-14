@@ -14,6 +14,7 @@ Changes vs original:
 
 import os
 import time
+import asyncio
 import logging
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -273,13 +274,18 @@ async def system_status(request: Request):
     from .tools.check_ai_plugins import verify_hashes
     integrity_passed, violations = verify_hashes()
     
+    def get_audit_size(path: str) -> int:
+        return os.path.getsize(path) if os.path.exists(path) else 0
+
+    audit_size = await asyncio.to_thread(get_audit_size, _AUDIT_LOG_PATH)
+
     return {
         "integrity": "verified" if integrity_passed else "tampered",
         "violations": violations,
         "sandbox_mode": SANDBOX_MODE,
         "threat_intel_version": "1.2.0",
         "governed_sessions": len(context_router.active_sessions),
-        "audit_log_size": os.path.getsize(_AUDIT_LOG_PATH) if os.path.exists(_AUDIT_LOG_PATH) else 0
+        "audit_log_size": audit_size
     }
 
 @app.post("/system/restore")
