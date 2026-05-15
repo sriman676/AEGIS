@@ -458,8 +458,9 @@ const PolicyModal = ({
         <div className="modal-body">
           {/* Name */}
           <div className="form-group">
-            <label className="form-label">Policy Name *</label>
+            <label htmlFor="policy-name" className="form-label">Policy Name *</label>
             <input
+              id="policy-name"
               className="form-input"
               placeholder="e.g. FileSystem Write Block"
               value={form.name}
@@ -469,8 +470,9 @@ const PolicyModal = ({
 
           {/* Description */}
           <div className="form-group">
-            <label className="form-label">Description *</label>
+            <label htmlFor="policy-description" className="form-label">Description *</label>
             <textarea
+              id="policy-description"
               className="form-input form-textarea"
               placeholder="Describe what this policy enforces…"
               rows={3}
@@ -482,8 +484,9 @@ const PolicyModal = ({
           {/* Severity + Tier row */}
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Severity</label>
+              <label htmlFor="policy-severity" className="form-label">Severity</label>
               <select
+                id="policy-severity"
                 className="form-input form-select"
                 aria-label="Policy severity"
                 value={form.severity}
@@ -496,8 +499,9 @@ const PolicyModal = ({
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Tier (0 – 3)</label>
+              <label htmlFor="policy-tier" className="form-label">Tier (0 – 3)</label>
               <select
+                id="policy-tier"
                 className="form-input form-select"
                 aria-label="Policy tier"
                 value={form.tier}
