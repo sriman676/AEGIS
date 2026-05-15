@@ -12,6 +12,7 @@ Changes vs original:
   L-02  /health returns minimal response
 """
 
+import asyncio
 import os
 import time
 import logging
@@ -120,24 +121,38 @@ async def repo_intake(request: Request, body: RepoIntakeRequest):
     Deterministic intake via Rust aegis-cli.
     Identifies 'Malware Repos' based on findings and risk scores.
     """
-    if not os.path.exists(body.path):
+    # ⚡ Bolt: Offload synchronous file system check to a thread to unblock the event loop
+    path_exists = await asyncio.to_thread(os.path.exists, body.path)
+    if not path_exists:
         raise HTTPException(status_code=404, detail="Path not found.")
     
     try:
         # 0. Fingerprint repository (Git remote)
         repo_id = body.path
         try:
+            # ⚡ Bolt: Use asyncio.create_subprocess_exec to prevent blocking the event loop
             git_cmd = ["git", "-C", body.path, "remote", "get-url", "origin"]
-            git_result = subprocess.run(git_cmd, capture_output=True, text=True, check=False)
-            if git_result.returncode == 0:
-                repo_id = git_result.stdout.strip()
+            git_process = await asyncio.create_subprocess_exec(
+                *git_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            git_stdout, _ = await git_process.communicate()
+            if git_process.returncode == 0:
+                repo_id = git_stdout.decode().strip()
         except Exception:
             pass
 
         # 1. Deterministic intake via Rust binary
+        # ⚡ Bolt: Use asyncio.create_subprocess_exec to prevent blocking the event loop
         cmd = ["aegis", "intake", "--path", body.path, "--format", "json"]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        report = json.loads(result.stdout)
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        stdout, stderr = await process.communicate()
+
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, cmd, output=stdout, stderr=stderr)
+
+        report = json.loads(stdout.decode())
         
         # 2. Semantic documentation scan (README)
         readme_path = Path(body.path) / "README.md"
