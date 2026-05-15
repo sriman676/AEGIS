@@ -17,6 +17,7 @@ Supports:
 """
 
 import asyncio
+import os
 import json
 import sys
 import signal
@@ -50,8 +51,11 @@ def _notify(title: str, message: str, critical: bool = False) -> None:
             toast(title, message, app_id="AEGIS.CommandCenter")
 
         elif os_name == "Darwin":
-            script = f'display notification "{message}" with title "{title}" sound name "Basso"'
-            subprocess.run(["osascript", "-e", script], check=False, timeout=3)
+            script = 'display notification (system attribute "AEGIS_MSG") with title (system attribute "AEGIS_TITLE") sound name "Basso"'
+            env = os.environ.copy()
+            env["AEGIS_TITLE"] = title
+            env["AEGIS_MSG"] = message
+            subprocess.run(["osascript", "-e", script], env=env, check=False, timeout=3)
 
         else:  # Linux / other POSIX
             urgency = "critical" if critical else "normal"
