@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type ReactElement } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactElement } from 'react';
 import {
   Shield, ShieldAlert, Cpu, Activity, Network, FileCode,
   CheckCircle, AlertTriangle, Lock, Unlock, GitBranch,
@@ -784,19 +784,29 @@ const FileMonitorTab = () => {
     URL.revokeObjectURL(url);
   };
 
-  const filtered = files.filter(f => {
-    const matchSearch = f.path.toLowerCase().includes(search.toLowerCase()) ||
-                        f.agent.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || f.status === statusFilter;
-    const matchType   = typeFilter   === 'all' || f.accessType === typeFilter;
-    return matchSearch && matchStatus && matchType;
-  });
+  // ⚡ Bolt Optimization: Memoize and hoist expensive search computations outside loop
+  const filtered = useMemo(() => {
+    const searchLower = search.toLowerCase();
+    return files.filter(f => {
+      const matchSearch = f.path.toLowerCase().includes(searchLower) ||
+                          f.agent.toLowerCase().includes(searchLower);
+      const matchStatus = statusFilter === 'all' || f.status === statusFilter;
+      const matchType   = typeFilter   === 'all' || f.accessType === typeFilter;
+      return matchSearch && matchStatus && matchType;
+    });
+  }, [files, search, statusFilter, typeFilter]);
 
-  const counts = {
-    allowed: files.filter(f => f.status === 'allowed').length,
-    blocked: files.filter(f => f.status === 'blocked').length,
-    pending: files.filter(f => f.status === 'pending').length,
-  };
+  // ⚡ Bolt Optimization: Single O(N) pass instead of three O(N) filter passes
+  const counts = useMemo(() => {
+    let allowed = 0, blocked = 0, pending = 0;
+    for (let i = 0; i < files.length; i++) {
+      const s = files[i].status;
+      if (s === 'allowed') allowed++;
+      else if (s === 'blocked') blocked++;
+      else if (s === 'pending') pending++;
+    }
+    return { allowed, blocked, pending };
+  }, [files]);
 
   return (
     <div className="filemon-layout animate-fade-in">
