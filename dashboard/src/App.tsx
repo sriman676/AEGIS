@@ -458,8 +458,9 @@ const PolicyModal = ({
         <div className="modal-body">
           {/* Name */}
           <div className="form-group">
-            <label className="form-label">Policy Name *</label>
+            <label className="form-label" htmlFor="policy-name">Policy Name *</label>
             <input
+              id="policy-name"
               className="form-input"
               placeholder="e.g. FileSystem Write Block"
               value={form.name}
@@ -469,8 +470,9 @@ const PolicyModal = ({
 
           {/* Description */}
           <div className="form-group">
-            <label className="form-label">Description *</label>
+            <label className="form-label" htmlFor="policy-desc">Description *</label>
             <textarea
+              id="policy-desc"
               className="form-input form-textarea"
               placeholder="Describe what this policy enforces…"
               rows={3}
@@ -482,8 +484,9 @@ const PolicyModal = ({
           {/* Severity + Tier row */}
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Severity</label>
+              <label className="form-label" htmlFor="policy-severity">Severity</label>
               <select
+                id="policy-severity"
                 className="form-input form-select"
                 aria-label="Policy severity"
                 value={form.severity}
@@ -496,8 +499,9 @@ const PolicyModal = ({
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Tier (0 – 3)</label>
+              <label className="form-label" htmlFor="policy-tier">Tier (0 – 3)</label>
               <select
+                id="policy-tier"
                 className="form-input form-select"
                 aria-label="Policy tier"
                 value={form.tier}
@@ -544,7 +548,7 @@ const DeleteConfirm = ({ name, onConfirm, onClose }: { name: string; onConfirm: 
     <div className="modal-box modal-box--sm glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
       <div className="modal-header">
         <h2 className="modal-title">🗑 Delete Policy</h2>
-        <button className="modal-close" onClick={onClose}>✕</button>
+        <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
       </div>
       <div className="modal-body">
         <p className="delete-confirm-text">
@@ -828,6 +832,7 @@ const FileMonitorTab = () => {
           <input
             className="filemon-search-input"
             placeholder="Search path or agent…"
+            aria-label="Search path or agent"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
